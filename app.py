@@ -3,11 +3,24 @@ import os
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 import logging
+import threading
+import http.server
+import socketserver
 
 logging.basicConfig(level=logging.DEBUG)
 
 SLACK_BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
 SLACK_APP_TOKEN = os.environ.get("SLACK_APP_TOKEN")
+
+# Start a dummy web server in a thread to keep Render happy
+def run_dummy_server():
+    PORT = 10000
+    Handler = http.server.SimpleHTTPRequestHandler
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+        print(f"Serving dummy HTTP on port {PORT}")
+        httpd.serve_forever()
+
+threading.Thread(target=run_dummy_server, daemon=True).start()
 
 app = App(token=SLACK_BOT_TOKEN)
 
